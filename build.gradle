@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id "idea"
+    id "org.springframework.boot" version "$springbootVersion"
+    id "io.spring.dependency-management" version "$springDependencyMgrVersion"
+    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
+    id "org.jetbrains.kotlin.kapt" version "$kotlinVersion"
+    id "org.jetbrains.kotlin.plugin.spring" version "$kotlinVersion"
+}
+
+group 'top.abosen.toys'
+version '1.0-SNAPSHOT'
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+dependencies {
+
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    testApi("org.springframework.boot:spring-boot-starter-test") {
+        exclude(group: "org.junit.vintage", module: "junit-vintage-engine")
+    }
+}
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs += ["-Xjsr305=strict"]
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs += ["-Xjsr305=strict"]
+        jvmTarget = "1.8"
+    }
+}
+test {
+    useJUnitPlatform()
+}
+
+idea {
+    module {
+        resourceDirs += file('config')
+    }
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/java'
+    main.java.srcDirs += 'src/main/java'
+    test.kotlin.srcDirs += 'src/test/java'
+    test.java.srcDirs += 'src/test/java'
+}
