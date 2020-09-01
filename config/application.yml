@@ -3,8 +3,11 @@ server:
 spring:
   profiles:
     active: local
+#  resources:
+#    static-locations: "${docs.path}/"
 ---
 spring:
   profiles: local
 docs:
-  path: "${HOME}/Documents/gitproject/thrift-docs/docs"
+  dir: "${app.home}/docs/"
+  file: demo.html

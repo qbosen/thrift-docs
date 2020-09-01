@@ -12,7 +12,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import java.io.File
-import java.nio.file.Paths
 
 /**
  * @author qiubaisen
@@ -33,7 +32,7 @@ class ThriftDocsApplication : ApplicationRunner {
     lateinit var config: DocsConfiguration
     override fun run(args: ApplicationArguments?) {
         logger.info("配置为: $config")
-        with(File(config.path)){
+        with(File(config.dir)){
             if(exists().not()){
                 mkdirs()
             }
@@ -48,7 +47,8 @@ class ThriftDocsApplication : ApplicationRunner {
 @ConstructorBinding
 @ConfigurationProperties(prefix = "docs")
 data class DocsConfiguration(
-        val path: String
+        val dir: String,
+        val file:String
 )
 
 inline fun <reified T> T.logger(): Logger {

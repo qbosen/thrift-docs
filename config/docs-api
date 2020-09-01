@@ -1,0 +1,216 @@
+#!/usr/bin/env bash
+
+# Attempt to set APP_HOME
+# Resolve links: $0 may be a link
+PRG="$0"
+# Need this for relative symlinks.
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
+done
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/.." >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+THRIFT_FILE=$APP_HOME/config/thrift
+DOCS_DIR=$APP_HOME/docs
+JAR_NAME="thrift-docs-1.0.jar"
+
+APP_BASE_NAME=`basename "$0"`
+DATA_DIR="logs"
+
+# Add default JVM options here. You can also use JAVA_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS=""
+
+# Use the maximum available, or set MAX_FD != -1 to use that value.
+MAX_FD="maximum"
+
+warn ( ) {
+    echo "$*"
+}
+
+die ( ) {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
+CLASSPATH=$APP_HOME/config
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        # IBM's JDK on AIX uses strange locations for the executables
+        JAVACMD="$JAVA_HOME/jre/sh/java"
+    else
+        JAVACMD="$JAVA_HOME/bin/java"
+    fi
+    if [ ! -x "$JAVACMD" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+else
+    JAVACMD="java"
+    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+fi
+
+# Increase the maximum file descriptors if we can.
+MAX_FD_LIMIT=`ulimit -H -n`
+if [ $? -eq 0 ] ; then
+    if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+        MAX_FD="$MAX_FD_LIMIT"
+    fi
+    ulimit -n $MAX_FD
+    if [ $? -ne 0 ] ; then
+        warn "Could not set maximum file descriptor limit: $MAX_FD"
+    fi
+else
+    warn "Could not query maximum file descriptor limit: $MAX_FD_LIMIT"
+fi
+
+# Split up the JVM_OPTS values into an array, following the shell quoting and substitution rules
+function splitJvmOpts() {
+    JVM_OPTS=("$@")
+}
+eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS "\"-Dapp.home=$APP_HOME\" \"-Dlog.home=$APP_HOME/$DATA_DIR\""
+
+
+app_is_running() {
+	if [ -f "$APP_HOME/$DATA_DIR/$APP_BASE_NAME.pid" ]; then
+		APP_PID=`cat "$APP_HOME/$DATA_DIR/$APP_BASE_NAME.pid"`
+		RET=`ps -p $APP_PID | grep java`
+		if [ -n "$RET" ]; then
+			return 0
+		else
+			rm -f "$APP_HOME/$DATA_DIR/$APP_BASE_NAME.pid" > /dev/null 2>&1
+			return 1
+		fi
+	else
+		return 1
+	fi
+}
+
+app_status() {
+	if ( app_is_running ); then
+		echo "$APP_BASE_NAME is running."
+	else
+		echo "$APP_BASE_NAME is not running."
+	fi
+}
+
+gen_html() {
+  	ARGS=("$@")
+  	service="${ARGS[0]}"
+		if [ $# -ge 1 ]; then
+			unset ARGS[0]
+		fi
+		rm -rf /tmp/docs/
+		mkdir -p /tmp/docs/"$service"
+		mkdir -p "$DOCS_DIR"/"$service"
+    sh "$THRIFT_FILE" --gen html -o /tmp/docs/"$service" "${ARGS[@]}"
+    mv /tmp/docs/"$service"/gen-html/* "$DOCS_DIR/$service"/
+}
+
+app_start() {
+	if ( app_is_running ); then
+		echo "$APP_BASE_NAME is running already."
+	else
+		mkdir $APP_HOME/$DATA_DIR > /dev/null 2>&1
+		nohup "$JAVACMD" "${JVM_OPTS[@]}" -classpath "$CLASSPATH" -jar $APP_HOME/$JAR_NAME "$@" > "$APP_HOME/$DATA_DIR/console.log" 2>&1 < /dev/null &
+		APP_PID="$!"
+		echo "$APP_PID" > "$APP_HOME/$DATA_DIR/$APP_BASE_NAME.pid"
+
+        sleep 3
+        if ( app_is_running ); then
+            echo "$APP_BASE_NAME is started."
+        else
+            echo "failed to start $APP_BASE_NAME."
+        fi
+	fi
+}
+
+app_stop() {
+	if ( app_is_running ); then
+		echo "stopping $APP_BASE_NAME..."
+		APP_PID=`cat "$APP_HOME/$DATA_DIR/$APP_BASE_NAME.pid"`
+		kill -s 15 $APP_PID
+
+		WAIT_COUNT=0
+		while [ $WAIT_COUNT -ne 10 ]; do
+			if ( app_is_running ); then
+				sleep 1
+				printf "."
+				WAIT_COUNT=`expr $WAIT_COUNT + 1`
+			else
+				echo "$APP_BASE_NAME is stopped."
+				break
+			fi
+		done
+		if ( app_is_running ); then
+			echo "$APP_BASE_NAME is not stopped."
+		fi
+	else
+		echo "$APP_BASE_NAME is not running."
+	fi
+}
+
+app_restart() {
+	if ( app_is_running ); then
+		app_stop
+	fi
+	app_start
+}
+
+app_showhelp() {
+	echo "usage: $0 start|stop|restart|status [args]"
+	echo " usage: $0 gen [service_name] [thrift_files...]"
+}
+
+if [ -z "$1" ]; then
+	app_showhelp
+	exit 1
+fi
+
+case "$1" in
+	status)
+		app_status
+		;;
+	start)
+		ARGS=("$@")
+		if [ $# -ge 1 ]; then
+			ARGS[0]=
+		fi
+		app_start "${ARGS[@]}"
+		;;
+	stop)
+		app_stop
+		;;
+	restart)
+		ARGS=("$@")
+		if [ $# -ge 1 ]; then
+			ARGS[0]=
+		fi
+		app_restart "${ARGS[@]}"
+		;;
+  gen)
+    ARGS=("$@")
+		if [ $# -ge 1 ]; then
+			unset ARGS[0]
+		fi
+		gen_html "${ARGS[@]}"
+		;;
+	*)
+		app_showhelp
+esac

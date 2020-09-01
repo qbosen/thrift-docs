@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>"${title}"</title>
+</head>
+
+<body>
+<div>
+    <ul>
+        <li th:each="service : ${services}">
+            <a th:href="${'docs/'+service}" th:text="${service}"/>
+        </li>
+    </ul>
+</div>
+
+</body>
+</html>
