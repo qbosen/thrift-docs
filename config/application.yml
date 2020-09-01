@@ -1,0 +1,10 @@
+server:
+  port: 9012
+spring:
+  profiles:
+    active: local
+---
+spring:
+  profiles: local
+docs:
+  path: "${HOME}/Documents/gitproject/thrift-docs/docs"
