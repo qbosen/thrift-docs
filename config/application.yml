@@ -10,4 +10,4 @@ spring:
   profiles: local
 docs:
   dir: "${app.home}/docs/"
-  file: demo.html
+  file: services.html

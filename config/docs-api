@@ -21,6 +21,7 @@ cd "$SAVED" >/dev/null
 THRIFT_FILE=$APP_HOME/config/thrift
 DOCS_DIR=$APP_HOME/docs
 JAR_NAME="thrift-docs-1.0.jar"
+CLASSPATH=$APP_HOME/config/
 
 APP_BASE_NAME=`basename "$0"`
 DATA_DIR="logs"
@@ -42,7 +43,6 @@ die ( ) {
     exit 1
 }
 
-CLASSPATH=$APP_HOME/config
 
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then
@@ -119,7 +119,7 @@ gen_html() {
 		rm -rf /tmp/docs/
 		mkdir -p /tmp/docs/"$service"
 		mkdir -p "$DOCS_DIR"/"$service"
-    sh "$THRIFT_FILE" --gen html -o /tmp/docs/"$service" "${ARGS[@]}"
+    "$THRIFT_FILE" --gen html -o /tmp/docs/"$service" "${ARGS[@]}"
     mv /tmp/docs/"$service"/gen-html/* "$DOCS_DIR/$service"/
 }
 
@@ -175,7 +175,7 @@ app_restart() {
 
 app_showhelp() {
 	echo "usage: $0 start|stop|restart|status [args]"
-	echo " usage: $0 gen [service_name] [thrift_files...]"
+	echo "usage: $0 gen [service_name] [thrift_files...]"
 }
 
 if [ -z "$1" ]; then
