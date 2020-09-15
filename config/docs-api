@@ -119,7 +119,11 @@ gen_html() {
 		rm -rf /tmp/docs/
 		mkdir -p /tmp/docs/"$service"
 		mkdir -p "$DOCS_DIR"/"$service"
-    "$THRIFT_FILE" --gen html -o /tmp/docs/"$service" "${ARGS[@]}"
+		for file in "${ARGS[@]}"
+		do
+		  "$THRIFT_FILE" --gen html -o /tmp/docs/"$service" "$file"
+		done
+
     mv /tmp/docs/"$service"/gen-html/* "$DOCS_DIR/$service"/
 }
 
