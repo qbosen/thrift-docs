@@ -116,15 +116,15 @@ gen_html() {
 		if [ $# -ge 1 ]; then
 			unset ARGS[0]
 		fi
-		rm -rf /tmp/docs/
-		mkdir -p /tmp/docs/"$service"
+
+		mkdir -p "$APP_HOME"/tmp/"$service"
 		mkdir -p "$DOCS_DIR"/"$service"
 		for file in "${ARGS[@]}"
 		do
-		  "$THRIFT_FILE" --gen html -o /tmp/docs/"$service" "$file"
+		  "$THRIFT_FILE" --gen html -o "$APP_HOME"/tmp/"$service" "$file"
 		done
 
-    mv /tmp/docs/"$service"/gen-html/* "$DOCS_DIR/$service"/
+    mv "$APP_HOME"/tmp/"$service"/gen-html/* "$DOCS_DIR/$service"/
 }
 
 app_start() {
