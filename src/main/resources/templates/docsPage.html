@@ -9,7 +9,7 @@
 <div>
     <ul>
         <li th:each="service : ${services}">
-            <a th:href="${'docs/'+service}" th:text="${service}"/>
+            <a th:href="${service.path}" th:text="${service.name}"/>
         </li>
     </ul>
 </div>
