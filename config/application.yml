@@ -2,12 +2,18 @@ server:
   port: 9012
 spring:
   profiles:
-    active: local
+    active: product
 #  resources:
 #    static-locations: "${docs.path}/"
----
-spring:
-  profiles: local
 docs:
   dir: "${app.home}/docs/"
   file: index.html
+  cache-seconds: 60
+
+---
+spring:
+  thymeleaf:
+    cache: off
+  config:
+    activate:
+      on-profile: local

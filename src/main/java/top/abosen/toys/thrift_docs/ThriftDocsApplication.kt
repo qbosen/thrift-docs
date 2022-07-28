@@ -48,7 +48,8 @@ class ThriftDocsApplication : ApplicationRunner {
 @ConfigurationProperties(prefix = "docs")
 data class DocsConfiguration(
         val dir: String,
-        val file:String
+        val file:String,
+        var cacheSeconds: Long
 )
 
 inline fun <reified T> T.logger(): Logger {
