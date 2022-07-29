@@ -6,3 +6,4 @@
 **/gradle
 /docs
 .idea
+application.pid

@@ -1,18 +1,95 @@
 <!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Thrift Docs</title>
+        <link th:href="@{/assets/css/docsPage.css}" rel="stylesheet" type="text/css"/>
+        <script th:src="@{/assets/js/split.min.js}"></script>
 </head>
 
 <body>
-<div>
-    <ul>
-        <li th:each="service : ${services}">
-            <a th:href="${service.path}" th:text="${service.name}"/>
-        </li>
-    </ul>
-</div>
+<div class="container">
+    <div class="main">
+        <div id="column-main">
+            <iframe id="detail-iframe" th:src="@{/assets/html/defaultDetail.html}" class="frame">
+            </iframe>
+        </div>
 
+        <div id="column-sidebar" class="flex-column">
+            <div id="service-index">
+                <iframe id="service-iframe" th:src="@{/assets/html/defaultIndex.html}" class="frame"></iframe>
+            </div>
+            <div id="main-index">
+                <ul>
+                    <li th:each="service: ${services}">
+                        <div th:replace="fragments :: serviceDoc(doc=${service})"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const serviceIframe = document.getElementById('service-iframe');
+    const detailIframe = document.getElementById('detail-iframe');
+
+    serviceIframe.onload = () => {
+        // 跳转新服务
+        serviceIframe.contentWindow.addEventListener('message', e => {
+            detailIframe.contentWindow.location.replace(e.data.module)
+            serviceIframe.contentWindow.location.replace(e.data.index)
+        });
+        // 拦截点击, 通知主页面
+        serviceIframe.contentWindow.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'A')
+                return;
+            const url = e.target.href;
+            detailIframe.contentWindow.postMessage({url: url}, '*')
+            e.preventDefault();
+        });
+    }
+
+    detailIframe.onload = () => {
+        detailIframe.contentWindow.addEventListener('message', e => {
+            detailIframe.contentWindow.location.replace(e.data.url)
+        });
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.directory').forEach(dir => {
+            const group = dir.parentElement.querySelector('ol,ul')
+            if (group !== null) {
+                // group.style.height = group.clientHeight + 'px';
+                group.classList.add('hidden');
+                dir.addEventListener('click', e => {
+                    group.classList.toggle('hidden');
+                    e.preventDefault();
+                })
+            }
+        });
+        document.querySelectorAll('.file').forEach(file => {
+            file.addEventListener('click', e => {
+                const service = e.target.href;
+                const index = service + "/index.html"
+                const module = service + "/" + e.target.getAttribute('module');
+                serviceIframe.contentWindow.postMessage({index: index, module: module});
+                e.preventDefault();
+            })
+        });
+
+    }
+
+    Split(['#column-main', '#column-sidebar'], {
+        sizes: [60, 40],
+        minSize: 300,
+    });
+
+    Split(['#service-index', '#main-index'], {
+        sizes: [40, 60],
+        direction: 'vertical',
+        minSize: 100,
+    });
+
+</script>
 </body>
 </html>
