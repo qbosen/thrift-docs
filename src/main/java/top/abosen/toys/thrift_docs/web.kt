@@ -6,7 +6,6 @@ import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import javax.servlet.http.HttpServletRequest
@@ -30,9 +29,7 @@ class WebController(private val configuration: DocsConfiguration) {
 
     @GetMapping("/")
     fun index(model: Model): String {
-        val services = File(configuration.dir).listFiles()?.asSequence()?.filter { it.isDirectory }
-            ?.map { ServiceModel(it.name, "dir/${it.name}") }?.toList() ?: emptyList()
-        model.addAttribute("services", services)
+        model.addAttribute("services", serviceDocHolder.getService(false))
         return "docsPage"
     }
 
@@ -69,13 +66,13 @@ data class ServiceModel(val name: String, val path: String)
 
 data class ServiceDoc(val name: String, val path: String, var isDoc: Boolean, val children: MutableList<ServiceDoc>)
 class ServiceDocHolder(private val configuration: DocsConfiguration) {
-    private var updateTime = LocalDateTime.now()
+    private var lastUpdateTime = LocalDateTime.now()
     private var docs: List<ServiceDoc> = loadServices()
 
     fun getService(flush: Boolean = false): List<ServiceDoc> {
-        if (flush || updateTime.plusSeconds(configuration.cacheSeconds).isBefore(LocalDateTime.now())) {
+        if (flush || lastUpdateTime.plusSeconds(configuration.cacheSeconds).isBefore(LocalDateTime.now())) {
             docs = loadServices()
-            updateTime = LocalDateTime.now()
+            lastUpdateTime = LocalDateTime.now()
         }
         return docs
     }

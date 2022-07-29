@@ -3,9 +3,9 @@
        th:href="'docs/' + ${doc.path}" th:text="${doc.name}"></a>
     <a th:if="${not doc.isDoc}" class="directory" th:href="'docs/' + ${doc.path}" th:text="${doc.name}"></a>
 
-    <ol th:if="${not doc.isDoc and not #lists.isEmpty(doc.children)}">
+    <ul th:if="${not doc.isDoc and not #lists.isEmpty(doc.children)}">
         <li th:each="child : ${doc.children}">
             <div th:replace=":: serviceDoc(doc=${child})"></div>
         </li>
-    </ol>
+    </ul>
 </div>

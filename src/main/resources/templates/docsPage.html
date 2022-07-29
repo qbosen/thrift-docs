@@ -3,35 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Thrift Docs</title>
-    <link th:href="@{/assets/css/docsPage.css}" rel="stylesheet" type="text/css"/>
+        <link th:href="@{/assets/css/docsPage.css}" rel="stylesheet" type="text/css"/>
+        <script th:src="@{/assets/js/split.min.js}"></script>
 </head>
 
 <body>
-<div class="container flex flex-column">
-    <div class="nav">
-        <div>
-            <button>Home</button>
-        </div>
-        <div>
-            <button>Hide</button>
-
-        </div>
-    </div>
-    <div class="main flex">
-        <div class="column-main">
-            <iframe id="detail-iframe" src="defaultDetail.html" class="frame">
+<div class="container">
+    <div class="main">
+        <div id="column-main">
+            <iframe id="detail-iframe" th:src="@{/assets/html/defaultDetail.html}" class="frame">
             </iframe>
         </div>
-        <div class="column-sidebar flex-column">
-            <div class="service-index">
-                <iframe id="service-iframe" src="defaultDetail.html" class="frame"></iframe>
+
+        <div id="column-sidebar" class="flex-column">
+            <div id="service-index">
+                <iframe id="service-iframe" th:src="@{/assets/html/defaultIndex.html}" class="frame"></iframe>
             </div>
-            <div class="main-index">
-                <ol>
+            <div id="main-index">
+                <ul>
                     <li th:each="service: ${services}">
                         <div th:replace="fragments :: serviceDoc(doc=${service})"></div>
                     </li>
-                </ol>
+                </ul>
             </div>
         </div>
     </div>
@@ -62,15 +55,14 @@
         });
     }
 
-
     window.onload = () => {
         document.querySelectorAll('.directory').forEach(dir => {
-            const ol = dir.parentElement.querySelector('ol')
-            if (ol !== null) {
-                ol.style.height = ol.clientHeight + 'px';
-                ol.classList.add('hidden');
+            const group = dir.parentElement.querySelector('ol,ul')
+            if (group !== null) {
+                // group.style.height = group.clientHeight + 'px';
+                group.classList.add('hidden');
                 dir.addEventListener('click', e => {
-                    ol.classList.toggle('hidden');
+                    group.classList.toggle('hidden');
                     e.preventDefault();
                 })
             }
@@ -83,8 +75,20 @@
                 serviceIframe.contentWindow.postMessage({index: index, module: module});
                 e.preventDefault();
             })
-        })
+        });
+
     }
+
+    Split(['#column-main', '#column-sidebar'], {
+        sizes: [60, 40],
+        minSize: 300,
+    });
+
+    Split(['#service-index', '#main-index'], {
+        sizes: [40, 60],
+        direction: 'vertical',
+        minSize: 100,
+    });
 
 </script>
 </body>

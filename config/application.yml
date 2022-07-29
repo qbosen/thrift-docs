@@ -8,12 +8,10 @@ spring:
 docs:
   dir: "${app.home}/docs/"
   file: index.html
-  cache-seconds: 60
+  cache-seconds: 10
 
 ---
-spring:
-  thymeleaf:
-    cache: off
-  config:
-    activate:
-      on-profile: local
+spring.thymeleaf.cache: off
+spring.config.activate.on-profile: local
+docs.cache-seconds: 0
+---
