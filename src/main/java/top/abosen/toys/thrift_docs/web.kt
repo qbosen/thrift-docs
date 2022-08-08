@@ -1,6 +1,7 @@
 package top.abosen.toys.thrift_docs
 
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.CacheControl
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -107,7 +108,9 @@ class ServiceDocHolder(private val configuration: DocsConfiguration) {
 @Configuration
 class WebConfigure(private val configuration: DocsConfiguration) : WebMvcConfigurer {
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        registry.addResourceHandler("/docs/**").addResourceLocations("file:${configuration.dir}")
+        registry.addResourceHandler("/docs/**")
+            .addResourceLocations("file:${configuration.dir}")
+            .setCacheControl(CacheControl.noCache())
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/")
     }
 }
